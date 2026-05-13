@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Wayground - Ôn Tập Đúng Sai</title>
+    <style>
+        :root { --primary: #4f46e5; --success: #10b981; --error: #ef4444; --bg: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .quiz-card { background: white; width: 90%; max-width: 500px; padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); text-align: center; }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 10px; margin-bottom: 30px; }
+        #progress { height: 100%; background: var(--primary); width: 0%; transition: 0.4s; border-radius: 10px; }
+        .lesson-tag { color: var(--primary); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 15px; display: block; }
+        #question { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin-bottom: 40px; line-height: 1.5; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+        .btn-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .tf-btn { border: none; padding: 25px; border-radius: 16px; font-size: 1.2rem; font-weight: 800; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-true { background: var(--success); box-shadow: 0 4px 0 #059669; }
+        .btn-false { background: var(--error); box-shadow: 0 4px 0 #dc2626; }
+        .tf-btn:active { transform: translateY(4px); box-shadow: none; }
+        #feedback { margin-top: 25px; font-weight: 700; font-size: 1.1rem; height: 30px; }
+        #next-btn { margin-top: 20px; background: #1e293b; color: white; border: none; padding: 15px 35px; border-radius: 12px; cursor: pointer; display: none; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card" id="main-card">
+    <div class="progress-bar"><div id="progress"></div></div>
+    <span id="lesson" class="lesson-tag">ĐANG TẢI...</span>
+    <div id="question">Cố gắng lên nhé!</div>
+    <div class="btn-box">
+        <button class="tf-btn btn-true" onclick="handleSelect(true)">ĐÚNG</button>
+        <button class="tf-btn btn-false" onclick="handleSelect(false)">SAI</button>
+    </div>
+    <div id="feedback"></div>
+    <button id="next-btn" onclick="nextQuestion()">TIẾP THEO →</button>
+</div>
+
+<script src="q.js"></script>
+<script>
+    let idx = 0;
+
+    function render() {
+        const item = quizData[idx];
+        document.getElementById('lesson').innerText = item.lesson;
+        document.getElementById('question').innerText = item.q;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('next-btn').style.display = "none";
+        document.getElementById('progress').style.width = `${(idx / quizData.length) * 100}%`;
+        
+        const btns = document.querySelectorAll('.tf-btn');
+        btns.forEach(b => { b.disabled = false; b.style.opacity = "1"; });
+    }
+
+    function handleSelect(choice) {
+        const correct = quizData[idx].ans;
+        const feedback = document.getElementById('feedback');
+        const btns = document.querySelectorAll('.tf-btn');
+
+        btns.forEach(b => b.disabled = true);
+
+        if (choice === correct) {
+            feedback.innerText = "CHÍNH XÁC! 🌟";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.innerText = "SAI RỒI, HÃY GHI NHỚ! ❌";
+            feedback.style.color = "var(--error)";
+        }
+        document.getElementById('next-btn').style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        idx++;
+        if (idx < quizData.length) {
+            render();
+        } else {
+            document.getElementById('progress').style.width = "100%";
+            document.getElementById('main-card').innerHTML = `
+                <h1 style="font-size:4rem">🏆</h1>
+                <h2>HOÀN THÀNH!</h2>
+                <p>Bạn đã nắm vững toàn bộ kiến thức ôn tập.</p>
+                <button onclick="location.reload()" style="background:var(--primary); color:white; border:none; padding:15px 40px; border-radius:12px; font-weight:700; cursor:pointer; margin-top:20px">LÀM LẠI</button>
+            `;
+        }
+    }
+
+    if (typeof quizData !== 'undefined') render();
+</script>
+</body>
+</html>

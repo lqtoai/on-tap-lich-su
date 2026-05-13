@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Wayground Study - Tin 12</title>
+    <style>
+        :root { --primary: #6366f1; --success: #22c55e; --error: #ef4444; --bg: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .quiz-card { background: white; width: 90%; max-width: 550px; padding: 35px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+        .progress-bar { height: 6px; background: #e2e8f0; border-radius: 10px; margin-bottom: 25px; }
+        #progress { height: 100%; background: var(--primary); width: 0%; transition: 0.4s; border-radius: 10px; }
+        .lesson-tag { font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; display: block; opacity: 0.7; }
+        #question { font-size: 1.3rem; font-weight: 700; margin-bottom: 30px; line-height: 1.4; color: #1e293b; }
+        .options { display: grid; gap: 12px; }
+        .opt-btn { padding: 18px; border: 2px solid #f1f5f9; border-radius: 16px; cursor: pointer; transition: 0.3s; background: #f8fafc; text-align: left; font-size: 1rem; font-weight: 500; color: #475569; }
+        .opt-btn:hover { border-color: var(--primary); background: #f5f7ff; }
+        .correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d !important; }
+        .wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c !important; }
+        .actions { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        #next-btn { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 12px; cursor: pointer; display: none; font-weight: 700; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        #counter { color: #94a3b8; font-weight: 600; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <div class="progress-bar"><div id="progress"></div></div>
+    <span id="lesson" class="lesson-tag">Đang tải...</span>
+    <div id="question">Câu hỏi sẽ hiện ở đây</div>
+    <div class="options" id="options-box"></div>
+    <div class="actions">
+        <span id="counter"></span>
+        <button id="next-btn" onclick="renderNext()">Câu tiếp theo →</button>
+    </div>
+</div>
+
+<script src="questions.js"></script>
+
+<script>
+    let currentIdx = 0;
+
+    function renderQuestion() {
+        // quizData được lấy trực tiếp từ file questions.js
+        const data = quizData[currentIdx];
+        
+        document.getElementById('lesson').innerText = data.lesson;
+        document.getElementById('question').innerText = data.q;
+        document.getElementById('counter').innerText = `Câu ${currentIdx + 1} / ${quizData.length}`;
+        document.getElementById('progress').style.width = `${((currentIdx + 1) / quizData.length) * 100}%`;
+        
+        const box = document.getElementById('options-box');
+        box.innerHTML = '';
+        data.options.forEach((txt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = txt;
+            btn.onclick = () => check(btn, i);
+            box.appendChild(btn);
+        });
+        document.getElementById('next-btn').style.display = 'none';
+    }
+
+    function check(btn, idx) {
+        const correctIdx = quizData[currentIdx].correct;
+        const btns = document.querySelectorAll('.opt-btn');
+        btns.forEach(b => b.style.pointerEvents = 'none');
+
+        if (idx === correctIdx) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('wrong');
+            btns[correctIdx].classList.add('correct');
+        }
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function renderNext() {
+        currentIdx++;
+        if (currentIdx < quizData.length) {
+            renderQuestion();
+        } else {
+            document.querySelector('.quiz-card').innerHTML = `
+                <div style="text-align:center">
+                    <h1 style="font-size: 3rem">🎉</h1>
+                    <h2 style="color:#1e293b">Tuyệt vời!</h2>
+                    <p style="color:#64748b">Bạn đã hoàn thành toàn bộ câu hỏi ôn tập.</p>
+                    <button onclick="location.reload()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-top:20px">Làm lại từ đầu</button>
+                </div>`;
+        }
+    }
+
+    // Khởi tạo lần đầu
+    if (typeof quizData !== 'undefined') {
+        renderQuestion();
+    } else {
+        document.getElementById('question').innerText = "Lỗi: Không tìm thấy dữ liệu trong questions.js!";
+    }
+</script>
+</body>
+</html>
